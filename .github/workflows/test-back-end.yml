@@ -3,7 +3,7 @@ name: Test Backend
 on:
   push:
     branches: [main]
-  pull_request:
+  pull_request: [main]
 
 jobs:
   build-and-test:
@@ -19,35 +19,10 @@ jobs:
           distribution: 'corretto'
 
       - name: Build and Test with Maven
-        run: mvn -f simple-api/pom.xml clean verify
+        run: mvn -B verify sonar:sonar
+          -Dsonar.projectKey=theonlyymanal_Devops-CI-CD
+          -Dsonar.organization=theonlyymanal
+          -Dsonar.host.url=https://sonarcloud.io
+          -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+          --file ./simple-api/pom.xml
 
-  build-and-push-docker-image:
-    needs: build-and-test
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Login to DockerHub
-        run: docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Build and push backend image
-        uses: docker/build-push-action@v3
-        with:
-          context: ./simple-api
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/tp-devops-simple-api:latest
-          push: ${{ github.ref == 'refs/heads/main' }}
-
-      - name: Build and push database image
-        uses: docker/build-push-action@v3
-        with:
-          context: ./database
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/tp-devops-database:latest
-          push: ${{ github.ref == 'refs/heads/main' }}
-
-      - name: Build and push http-server image
-        uses: docker/build-push-action@v3
-        with:
-          context: ./http-server
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/tp-devops-http-server:latest
-          push: ${{ github.ref == 'refs/heads/main' }}
