@@ -3,7 +3,8 @@ name: Test Backend
 on:
   push:
     branches: [main]
-  pull_request: [main]
+  pull_request:
+    branches : [main]
 
 jobs:
   build-and-test:
